@@ -12,8 +12,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 # Load dataset
 col_names = ['sender', 'receiver', 'date', 'subject', 'body', 'url', 'label']
-dataset1 = pd.read_csv('Nazario_5.csv', header=None, names=col_names)
-#dataset2 = pd.read_csv('Nazario_7_3.xlsx', header=None, names=col_names)
+#dataset1 = pd.read_csv('Nazario_5.csv', header=None, names=col_names)
+dataset1 = pd.read_csv('Nazario_7_3.csv', header=None, names=col_names)
 
 onehot = OneHotEncoder(handle_unknown='ignore')
 onehot_transformed = pd.DataFrame(onehot.fit_transform(dataset1[['sender', 'receiver', 'date', 'subject', 'body', 'url']]).toarray())
@@ -23,19 +23,20 @@ dataset1.drop(['sender', 'receiver', 'date', 'subject', 'body', 'url'], axis=1, 
 X = dataset1.iloc[:, 1:]
 y = dataset1.iloc[:, :1]
 
-# Split dataset into training set and test set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+# Check the distribution of your classes
+print(y['label'].value_counts())
 
-# Splitting the dataset into the Training set and Test set
+# Split dataset into training set and test set
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Create a StratifiedKFold object
 strat_kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-# Use the object to split your data
-for train_index, test_index in strat_kfold.split(X, y.values.ravel()):
-    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+# Use the StratifiedKFold object to split the training data into different folds
+for train_index, val_index in strat_kfold.split(X_train, y_train):
+    X_train_fold, X_val_fold = X_train.iloc[train_index], X_train.iloc[val_index]
+    y_train_fold, y_val_fold = y_train.iloc[train_index], y_train.iloc[val_index]
+
 
 # Decision Tree
 decision_tree = DecisionTreeClassifier(random_state=42)
